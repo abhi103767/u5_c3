@@ -31,7 +31,9 @@ const auth = (req,res,next) => {
  
 }
 
-
+app.get('/',(req,res) => {
+    res.send('Welcome to evaluation RCT201 C3')
+})
 app.post('/user/create',(req,res) => {
 
    fs.readFile('./db.json','utf-8', (err,data) => {
