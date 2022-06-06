@@ -2,7 +2,8 @@
 const  express = require('express');
 const {v4 : uuidv4} = require('uuid')
 
-const fs = require('fs')
+const fs = require('fs');
+const { parse } = require('path');
 const app = express();
 require('dotenv').config();
 const port  = process.env.PORT || 4000;
@@ -26,6 +27,8 @@ const auth = (req,res,next) => {
            else res.status(401).send({status: "Invalid Credentials" })
         })
     }
+
+ 
 }
 
 
@@ -86,6 +89,10 @@ app.post('/user/create',(req,res) => {
 })
 
 
+app.post('/user/logout',(req,res) => {
+    res.send({ status: "user logged out successfully" })
+})
+
 app.post('/votes/vote/:user',(req,res) => {
 
     const name = req.params.user;
@@ -117,6 +124,7 @@ console.log(user)
     
     fs.writeFile('./db.json', JSON.stringify(parsed),() => {
         console.log('voting is done');
+        res.send('voted');
     })
 })
 })
@@ -127,6 +135,7 @@ app.get('/votes/count/:user', (req,res) => {
     const name = req.params.user;
     console.log(name)
 
+
        fs.readFile('./db.json','utf-8',(err,data) => {
     const parsed = JSON.parse(data);
    
@@ -134,12 +143,43 @@ app.get('/votes/count/:user', (req,res) => {
     const user = parsed.users.find((user) => {
       return  user.name === name
 })
-    const {votes} = user;
+    
+   if(user) {
+       res.send({
+           status : user.votes
+       })
+   }
+   else {
     res.send({
-        status : votes,
         status : 'cannot find user'
     })
+}
 })
+})
+
+
+app.get('/db', (req,res) => {
+       fs.readFile('./db.json','utf-8',(err,data) => {
+    const parsed = JSON.parse(data);
+    res.send(parsed.users);
+})
+})
+
+app.post('/db',(req,res) => {
+    const parsed = {
+        users : []
+    }
+
+
+    parsed.users = [...req.body];
+    console.log(parsed)
+
+   
+    fs.writeFile('./db.json',JSON.stringify(parsed), () => {
+        console.log('file writing is successfully')
+        res.send('Entire dataBase is updated ');
+    })
+    
 })
 
 
